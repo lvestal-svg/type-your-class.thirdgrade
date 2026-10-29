@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Build Your Class - Grade 3</title>
+  <style>
+    :root{
+      --bg1:#fffbec; --bg2:#e5f8ff; --bg3:#f5f0ff; --card:#ffffff; --text:#0f172a;
+    }
+    body{
+      margin:0; font-family:system-ui,Segoe UI,Roboto,sans-serif;
+      background:radial-gradient(1200px 800px at 10% -10%, var(--bg2), transparent 60%),
+                 radial-gradient(1000px 1000px at 110% 0%, var(--bg3), transparent 60%),
+                 radial-gradient(900px 700px at 50% 120%, var(--bg1), transparent 60%),
+                 linear-gradient(180deg,#e9f7ff,#fff);
+      color:var(--text); display:flex; align-items:center; justify-content:center; padding:24px; height:100vh;
+    }
+    .app{width:100%; max-width:1000px}
+    .card{background:var(--card); border:1px solid rgba(0,0,0,.06); border-radius:20px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.06)}
+    h1{margin:0 0 12px; font-size:clamp(32px,5vw,48px); text-align:center;}
+    h2{margin-top:0}
+    p{opacity:.9; text-align:center}
+    .grid{display:grid; gap:16px}
+    .two{grid-template-columns:1fr 1fr}
+    .btn{border:1px solid rgba(0,0,0,.1); background:#f1f5f9; color:var(--text); padding:12px 16px; border-radius:14px; cursor:pointer; font-weight:600}
+    .btn.primary{background:linear-gradient(135deg,#34d399,#60a5fa); color:white; border:none}
+    .btn.good{background:linear-gradient(135deg,#22c55e,#8bff9a); color:#064e3b; border:none}
+    .teacher-list{display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:12px}
+    .panel{background:#f8fafc; border:1px dashed rgba(0,0,0,.12); padding:16px; border-radius:14px}
+    .target{font-size:clamp(28px,6vw,54px); font-weight:900; text-align:center; background:linear-gradient(180deg,#0f172a,#3b82f6 70%); -webkit-background-clip:text; color:transparent}
+    .input-row{display:flex; justify-content:center}
+    input[type="text"]{width:min(580px,90%); font-size:20px; padding:14px 16px; border-radius:14px; border:1px solid rgba(0,0,0,.14)}
+    .hud{display:flex; gap:12px; justify-content:space-between; align-items:center; flex-wrap:wrap}
+    .chip{padding:8px 12px; border-radius:999px; border:1px solid rgba(0,0,0,.12); background:#eef2ff; font-weight:600}
+    .stickgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:8px}
+    .stick{display:flex; flex-direction:column; align-items:center; background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:12px; padding:6px}
+    .stick svg{width:30px; height:30px}
+    .tag{margin-top:4px; font-size:11px; text-align:center; width:100%}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div id="screen-setup" class="card grid">
+      <h1>Build Your Class — Grade 3</h1>
+      <p>Type the name shown and press <b>Enter</b>. See how many classmates you can type in 30 seconds!</p>
+      <div class="panel grid">
+        <label for="playerName"><b>Your name</b></label>
+        <input id="playerName" type="text" placeholder="Type your first name" />
+      </div>
+      <h3>Select your teacher</h3>
+      <div id="teacherButtons" class="teacher-list"></div>
+    </div>
+
+    <div id="screen-game" class="card hidden grid">
+      <div class="hud">
+        <div class="chip">⏱️ Time: <span id="timeLeft">30.0</span>s</div>
+        <div class="chip">✅ Score: <span id="score">0</span></div>
+        <div class="chip">Class: <span id="hudClass"></span></div>
+        <div class="chip">Player: <span id="hudPlayer"></span></div>
+      </div>
+      <div class="chip" id="collectChip" style="justify-self:start">Collected: <span id="collected">0</span>/<span id="classTotal">0</span></div>
+      <div id="stickGrid" class="stickgrid"></div>
+      <div id="target" class="target">—</div>
+      <div class="input-row"><input id="answer" type="text" /></div>
+      <div class="grid two">
+        <button id="startBtn" class="btn primary">Start</button>
+        <button id="endBtn" class="btn">End Round</button>
+      </div>
+    </div>
+
+    <div id="screen-results" class="card hidden grid">
+      <h2>Round Over!</h2>
+      <p>Great work, <span id="resPlayer"></span> in <b><span id="resClass"></span></b>!</p>
+      <h3>Your Score: <span id="finalScore">0</span></h3>
+      <div id="resultsStickGrid" class="stickgrid"></div>
+      <div class="grid two">
+        <button id="playAgain" class="btn good">Play Again</button>
+        <button id="switchClass" class="btn">Switch Class</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TEACHERS=["Teacher 1", "Teacher 2", "Teacher 3", "Teacher 4"];
+    const CLASSLISTS={
+      "Teacher 1": [
+            "Laila",
+            "Jocelyn",
+            "Edin",
+            "McKenna",
+            "Dominic",
+            "Teagan",
+            "Lily",
+            "Skylar",
+            "Michael",
+            "Alexa",
+            "Wesley",
+            "Fletcher",
+            "Harrison",
+            "Avaleigh",
+            "Sandro",
+            "Colton",
+            "Kennedy",
+            "Aurora",
+            "Salim",
+            "Asher",
+            "Brooks"
+      ],
+      "Teacher 2": [
+            "Lilliana",
+            "Christian",
+            "Stella",
+            "Enid",
+            "Coen",
+            "Giuliana",
+            "Gunner",
+            "Kinley",
+            "Miles",
+            "Bernardo",
+            "Hayden",
+            "Maaruf",
+            "Deangelo",
+            "Harper",
+            "Grace",
+            "Carter",
+            "Elsie",
+            "Beckham",
+            "Logan",
+            "Caleb",
+            "Kadyn"
+      ],
+      "Teacher 3": [
+            "Odin",
+            "Atticus",
+            "Stella",
+            "Mark",
+            "Jordan",
+            "Dominic",
+            "Elena",
+            "Renzo",
+            "Emma",
+            "Charlotte",
+            "Callen",
+            "Addilyn",
+            "Gianna",
+            "Julian",
+            "Brock",
+            "Madilyn",
+            "Arianna",
+            "Emily",
+            "Shay",
+            "Myra"
+      ],
+      "Teacher 4": [
+            "Lincoln",
+            "Malachi",
+            "Cora",
+            "Charles",
+            "Luke",
+            "Shelby",
+            "Aubrey",
+            "Graceyn",
+            "Harrison",
+            "Dominic",
+            "Zachariah",
+            "Chase",
+            "Lily",
+            "Emilia",
+            "Hannah",
+            "Aidan",
+            "Noah",
+            "Avery",
+            "Kaira",
+            "Arvin",
+            "Ava"
+      ]
+};
+
+    let currentClass,player,roundActive=false,score=0,timeLeft=30,ticker,pool,idx,collectedNames;
+    const screenSetup=document.getElementById('screen-setup'),screenGame=document.getElementById('screen-game'),screenResults=document.getElementById('screen-results');
+    const teacherButtons=document.getElementById('teacherButtons'),playerNameInput=document.getElementById('playerName');
+    const hudClass=document.getElementById('hudClass'),hudPlayer=document.getElementById('hudPlayer'),timeLeftEl=document.getElementById('timeLeft'),scoreEl=document.getElementById('score');
+    const targetEl=document.getElementById('target'),answerEl=document.getElementById('answer');
+    const startBtn=document.getElementById('startBtn'),endBtn=document.getElementById('endBtn');
+    const resPlayer=document.getElementById('resPlayer'),resClass=document.getElementById('resClass'),finalScore=document.getElementById('finalScore'),resultsStickGrid=document.getElementById('resultsStickGrid'),stickGrid=document.getElementById('stickGrid');
+    const collectedEl=document.getElementById('collected'),classTotalEl=document.getElementById('classTotal');
+    const playAgain=document.getElementById('playAgain'),switchClass=document.getElementById('switchClass');
+
+    TEACHERS.forEach(t=>{const b=document.createElement('button');b.className='btn';b.textContent=t;b.onclick=()=>selectTeacher(t);teacherButtons.appendChild(b)});
+
+    function selectTeacher(t){player=(playerNameInput.value||'Player').trim();currentClass=t;hudClass.textContent=t;hudPlayer.textContent=player;setupRound();screenSetup.classList.add('hidden');screenGame.classList.remove('hidden')}
+
+    function setupRound(){
+      score=0;scoreEl.textContent=0;timeLeft=30;timeLeftEl.textContent=timeLeft.toFixed(1);roundActive=false;clearInterval(ticker);
+      pool=shuffle([...CLASSLISTS[currentClass]]);idx=0;collectedNames=new Set();
+      stickGrid.innerHTML='';resultsStickGrid.innerHTML='';
+      classTotalEl.textContent=CLASSLISTS[currentClass].length; collectedEl.textContent='0';
+      setTarget('—'); // do not reveal a name until Start is clicked
+    }
+
+    function setTarget(name){targetEl.textContent=name;answerEl.value=''}
+
+    function startRound(){
+      if(roundActive)return;roundActive=true;setTarget(pool[idx]); // reveal the first name only now
+      let last=performance.now();ticker=setInterval(()=>{const now=performance.now();const dt=(now-last)/1000;last=now;timeLeft=Math.max(0,timeLeft-dt);timeLeftEl.textContent=timeLeft.toFixed(1);if(timeLeft<=0)endRound()},100)}
+
+    function endRound(){roundActive=false;clearInterval(ticker);finalScore.textContent=score;resPlayer.textContent=player;resClass.textContent=currentClass;resultsStickGrid.innerHTML=stickGrid.innerHTML;screenGame.classList.add('hidden');screenResults.classList.remove('hidden')}
+
+    function nextName(){idx++;if(idx>=pool.length){pool=shuffle(pool);idx=0}setTarget(pool[idx])}
+
+    answerEl.addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer()});
+    function normalize(s){return s.trim().toLowerCase()}
+    function checkAnswer(){if(!roundActive)return;const expected=targetEl.textContent;if(normalize(answerEl.value)===normalize(expected)){if(roundActive){score++;scoreEl.textContent=score;if(!collectedNames.has(expected)){collectedNames.add(expected);addStickFigure(expected);collectedEl.textContent=String(collectedNames.size);}nextName()}}else{answerEl.classList.remove('wrong');void answerEl.offsetWidth;answerEl.classList.add('wrong')}}
+
+    startBtn.onclick=()=>{setupRound();startRound();answerEl.focus()};
+    endBtn.onclick=()=>{if(roundActive)endRound()};
+    playAgain.onclick=()=>{screenResults.classList.add('hidden');screenGame.classList.remove('hidden');setupRound()};
+    switchClass.onclick=()=>{screenResults.classList.add('hidden');screenSetup.classList.remove('hidden')};
+
+    function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+    function addStickFigure(name){const d=document.createElement('div');d.className='stick';d.innerHTML=stickSVG()+`<div class="tag">${name}</div>`;stickGrid.appendChild(d)}
+    function stickSVG(){return `<svg viewBox='0 0 32 32'><circle cx='16' cy='8' r='5' fill='#fde68a' stroke='#1f2937' stroke-width='1.5'/><line x1='16' y1='13' x2='16' y2='22' stroke='#1f2937' stroke-width='2'/><line x1='16' y1='15' x2='9' y2='18' stroke='#1f2937' stroke-width='2'/><line x1='16' y1='15' x2='23' y2='18' stroke='#1f2937' stroke-width='2'/><line x1='16' y1='22' x2='10' y2='28' stroke='#1f2937' stroke-width='2'/><line x1='16' y1='22' x2='22' y2='28' stroke='#1f2937' stroke-width='2'/></svg>`}
+  </script>
+</body>
+</html>
